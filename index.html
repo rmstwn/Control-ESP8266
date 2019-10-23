@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        #layout {
+            display: grid;
+            justify-content: center;
+            grid-template-columns: 300px 300px;
+            margin-top: 200px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            border-radius: 50px;
+            transition: .4s;
+            transform: scale(1.5);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: rgb(33, 243, 44);
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px rgb(33, 243, 44);
+        }
+
+        input:checked+.slider:before {
+            -webkit-transform: translateX(30px);
+            -ms-transform: translateX(30px);
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="layout">
+        <div style="display: flex; justify-content: center;align-items: center;">
+            <h1 style="margin: 0;margin-right: 30px;">Mode 1</h1>
+            <label class="switch">
+                <input id="mode1" type="checkbox" onclick="modeFan1()">
+                <span class="slider round"></span>
+            </label>    
+        </div>
+        <h1 style="margin: 0.1;font-size: 40pt;">  </h1>
+
+        <div style="display: flex; justify-content: center;align-items: center;">
+            <h1 style="margin: 0;margin-right: 30px;">Fan 1</h1>
+            <label class="switch">
+                <input id="fan1" type="checkbox" onclick="fan1state()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <h1 id="temp1" style="margin: 0.1;font-size: 40pt;">0<sup>o</sup>C</h1>
+
+        <div style="display: flex; justify-content: center;align-items: center;">
+            <h1 style="margin: 0;margin-right: 30px;">Fan 2</h1>
+            <label class="switch">
+                <input id="fan2" type="checkbox" onclick="fan2state()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <h1 id="temp2" style="margin: 0.1;font-size: 40pt ; ">0<sup>o</sup>C</h1>
+    </div>
+    <Script>
+        var mode1, fan1, temp1;
+
+        function update() {
+            fetch("http://localhost:3000/data")
+                .then(res => res.json()
+                    .then(data => {
+                        document.getElementById("temp1").innerHTML = `
+            <h1 id="temp1" style="margin: 0.1;font-size: 40pt;">${data.temp}<sup>o</sup>C</h1>
+            `
+                        fan1 = data.fan
+                        let fanS1 = document.getElementById("fan1")
+                        if (fan1 == "OFF") fanS1.checked = false
+                        else fanS1.checked = true
+
+                        mode1 = data.mode
+                        let modefan1 = document.getElementById("mode1")
+                        if (mode1 == "manual") modefan1.checked = false
+                        else modefan1.checked = true
+
+                    })
+
+                )
+        }
+        function modeFan1() {
+            if (mode1 == "manual") fetch(`http://192.168.43.93/?fan=${fan1}&mode=automatic`)
+            else fetch(`http://192.168.43.93/?fan=${fan1}&mode=manual`)
+        }
+        function fan1state() {
+            if (fan1 == "ON") fetch("http://192.168.43.93/?fan=OFF")
+            else fetch("http://192.168.43.93/?fan=ON")
+        }
+
+        function fan2state() {
+            if (fan2 == "ON") fetch("http://192.168.43.93/?fan=OFF")
+            else fetch("http://192.168.43.93/?fan=ON")
+        }
+
+        setInterval("update()", 10)
+    </Script>
+</body>
+
+</html>
